@@ -1,0 +1,10 @@
+<?php
+// Copy this file to config.local.php and replace these values. Never commit it.
+return [
+    'DB_HOST' => '127.0.0.1',
+    'DB_PORT' => '3306',
+    'DB_NAME' => 'tripeso_reward',
+    'DB_USER' => 'root',
+    'DB_PASSWORD' => '',
+    'ALLOWED_ORIGINS' => 'https://your-site.example.com',
+];

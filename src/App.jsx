@@ -70,35 +70,49 @@ function App() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
   };
 
-  const request = async (endpoint, body) => {
+const request = async (endpoint, body) => {
+  try {
+    const response = await fetch(`${API_URL}/${endpoint}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+
+    const responseText = await response.text();
+
+    let data = null;
+
     try {
-      const response = await fetch(`${API_URL}/${endpoint}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
-      const responseText = await response.text();
-      let data = null;
-      try {
-        data = JSON.parse(responseText);
-      } catch {
-        // The Vite development server returns index.html with HTTP 200 when it
-        // was started before the proxy configuration was added.
-      }
-      if (!data) {
-        if (response.status === 200 && responseText.includes('<!doctype html>')) {
-          throw new Error("Vite is serving the app instead of the API. Stop Vite and run npm.cmd run dev again.");
-        }
-        throw new Error(`The API returned an invalid response (HTTP ${response.status}).`);
-      }
-      return data;
-    } catch (requestError) {
-      if (requestError instanceof TypeError) {
-        throw new Error("Cannot reach the API. Start Apache in Laragon, then restart Vite.");
-      }
-      throw requestError;
+      data = JSON.parse(responseText);
+    } catch {
+      // The Vite development server returns index.html with HTTP 200 when it
+      // was started before the proxy configuration was added.
     }
-  };
+
+    if (!data) {
+      if (response.status === 200 && responseText.includes('<!doctype html>')) {
+        throw new Error(
+          "Vite is serving the app instead of the API. Stop Vite and run npm.cmd run dev again."
+        );
+      }
+
+      throw new Error(
+        `The API returned an invalid response (HTTP ${response.status}).`
+      );
+    }
+
+    return data;
+
+  } catch (requestError) {
+    if (requestError instanceof TypeError) {
+      throw new Error(
+        "Cannot reach the account server. Check that VITE_API_URL points to your deployed API."
+      );
+    }
+
+    throw requestError;
+  }
+};
 
   const register = async (e) => {
     e.preventDefault();
@@ -108,7 +122,7 @@ function App() {
     if (form.password.length < 6) return setError("Password should be at least 6 characters.");
 
     try {
-      const data = await request("register.php", {
+      const data = await request("register", {
         name: form.name.trim(), email: form.email.trim().toLowerCase(), password: form.password
       });
       if (!data.success) return setError(data.message || "Could not create the account.");
@@ -131,7 +145,7 @@ function App() {
   }
 
   try {
-    const data = await request("login.php", {
+    const data = await request("login", {
       email: form.email.trim().toLowerCase(), password: form.password
     });
 

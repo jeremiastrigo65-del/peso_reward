@@ -9,7 +9,9 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '/tripeso_reward/api'),
+        // Keep the Vercel routes extension-free while mapping local development
+        // requests to the existing PHP endpoints.
+        rewrite: (path) => path.replace(/^\/api\/(.+)$/, '/tripeso_reward/api/$1.php'),
       },
     },
   },
